@@ -521,10 +521,7 @@ export default function ZorrIDCard() {
           {/* Botón para volver al home */}
           <div className="mb-6">
             <Link href="/">
-              <Button
-                variant="outline"
-                className="border-rozu-pink text-rozu-purple-dark hover:bg-rozu-pink-light hover:text-rozu-purple-dark font-poppins bg-transparent rounded-full px-6 py-3"
-              >
+              <Button className="bg-rozu-pink hover:bg-rozu-pink-dark text-white font-poppins rounded-full px-6 py-3">
                 ← Volver al Home
               </Button>
             </Link>
@@ -668,7 +665,7 @@ export default function ZorrIDCard() {
             <Button
               onClick={generateCard}
               disabled={!isFormValid || isGenerating}
-              className="w-full bg-gradient-to-r from-rozu-pink to-rozu-purple-medium hover:from-rozu-pink-dark hover:to-rozu-purple-medium text-white shadow-lg font-poppins rounded-full py-3"
+              className="w-full bg-rozu-pink hover:bg-rozu-pink-dark text-white shadow-lg font-poppins rounded-full py-3"
               size="lg"
             >
               {isGenerating ? (

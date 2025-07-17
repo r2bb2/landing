@@ -853,7 +853,7 @@ export default function RozuLanding() {
       {/* Model & Reference Section */}
       <section
         id="model"
-        className="py-12 lg:py-20 px-4 lg:px-0 bg-gradient-to-r from-rozu-pink-light to-rozu-blue-light relative"
+        className="py-12 lg:py-20 px-4 lg:px-0 bg-gradient-to-r from-rozu-pink-light/50 to-rozu-blue-light/50 relative"
         style={getSectionStyle("model")}
       >
         {data.backgroundImages.model && <div className="absolute inset-0 bg-black/20"></div>}
