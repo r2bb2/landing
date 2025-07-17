@@ -513,24 +513,20 @@ export default function ZorrIDCard() {
           >
             ✨ ZorrID Creator ✨
           </h1>
-          <p className="text-rozu-purple-dark text-lg font-poppins">
-            Convertite en miembro oficial del santuario secreto
-          </p>
+          <p className="text-gray-700 text-lg font-poppins">Convertite en miembro oficial del santuario secreto</p>
         </div>
 
         <Card className="bg-white/80 backdrop-blur-sm border-rozu-pink-light shadow-xl">
           <CardHeader className="bg-gradient-to-r from-rozu-pink-light to-rozu-pink-light rounded-t-lg">
-            <CardTitle className="text-2xl text-rozu-purple-dark flex items-center gap-2 font-poppins">
+            <CardTitle className="text-2xl text-gray-800 flex items-center gap-2 font-poppins">
               <Sparkles className="text-rozu-pink" size={24} />
               Información Personal
             </CardTitle>
-            <CardDescription className="text-rozu-purple-medium font-poppins">
-              Completa los datos para tu ZorrID
-            </CardDescription>
+            <CardDescription className="text-gray-600 font-poppins">Completa los datos para tu ZorrID</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 p-6">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-rozu-purple-dark font-medium font-poppins">
+              <Label htmlFor="name" className="text-gray-800 font-medium font-poppins">
                 Nombre ✨ <span className="text-red-500">*</span>
               </Label>
               <div className="relative">
@@ -543,11 +539,11 @@ export default function ZorrIDCard() {
                     setCardData((prev) => ({ ...prev, name: e.target.value }))
                     if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }))
                   }}
-                  className={`border-rozu-pink-light focus:border-rozu-pink focus:ring-rozu-pink-light font-poppins ${
+                  className={`border-rozu-pink-light focus:border-rozu-pink focus:ring-2 focus:ring-rozu-pink/20 font-poppins ${
                     errors.name ? "border-red-300 focus:border-red-400" : ""
                   }`}
                 />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-rozu-purple-medium font-poppins">
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 font-poppins">
                   {cardData.name.length}/{NAME_LIMIT}
                 </div>
               </div>
@@ -560,8 +556,8 @@ export default function ZorrIDCard() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="pronouns" className="text-rozu-purple-dark font-medium font-poppins">
-                Pronombres 🦊 <span className="text-rozu-purple-medium text-sm">(Opcional)</span>
+              <Label htmlFor="pronouns" className="text-gray-800 font-medium font-poppins">
+                Pronombres 🦊 <span className="text-gray-500 text-sm">(Opcional)</span>
               </Label>
               <Select
                 value={cardData.pronouns}
@@ -583,7 +579,7 @@ export default function ZorrIDCard() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="profession" className="text-rozu-purple-dark font-medium font-poppins">
+              <Label htmlFor="profession" className="text-gray-800 font-medium font-poppins">
                 Profesión 🌟 <span className="text-red-500">*</span>
               </Label>
               <div className="flex gap-2">
@@ -629,7 +625,7 @@ export default function ZorrIDCard() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="avatar" className="text-rozu-purple-dark font-medium font-poppins">
+              <Label htmlFor="avatar" className="text-gray-800 font-medium font-poppins">
                 Avatar 💖 <span className="text-red-500">*</span>
               </Label>
               <div
@@ -640,8 +636,8 @@ export default function ZorrIDCard() {
                 <input id="avatar" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                 <label htmlFor="avatar" className="cursor-pointer">
                   <Upload className="mx-auto text-rozu-pink mb-2" size={32} />
-                  <p className="text-rozu-purple-medium font-poppins">Haz clic para subir tu foto</p>
-                  <p className="text-sm text-rozu-purple-medium/70 mt-1 font-poppins">PNG, JPG hasta 10MB</p>
+                  <p className="text-gray-700 font-poppins">Haz clic para subir tu foto</p>
+                  <p className="text-sm text-gray-500 mt-1 font-poppins">PNG, JPG hasta 10MB</p>
                 </label>
               </div>
               {errors.avatar && (
@@ -675,13 +671,11 @@ export default function ZorrIDCard() {
 
         <Card className="bg-white/80 backdrop-blur-sm border-rozu-purple-medium shadow-xl">
           <CardHeader className="bg-gradient-to-r from-rozu-purple-medium/20 to-rozu-pink-light rounded-t-lg">
-            <CardTitle className="text-2xl text-rozu-purple-dark flex items-center gap-2 font-poppins">
+            <CardTitle className="text-2xl text-gray-800 flex items-center gap-2 font-poppins">
               <Star className="text-rozu-purple-medium" size={24} />
               Vista Previa
             </CardTitle>
-            <CardDescription className="text-rozu-purple-medium font-poppins">
-              Así se verá tu tarjeta mágica
-            </CardDescription>
+            <CardDescription className="text-gray-600 font-poppins">Así se verá tu tarjeta mágica</CardDescription>
           </CardHeader>
           <CardContent className="p-6 flex justify-center">
             <div
