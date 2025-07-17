@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import Link from "next/link"
 
 import { useState, useRef, useMemo } from "react"
 import { Button } from "@/components/ui/button"
@@ -513,7 +514,19 @@ export default function ZorrIDCard() {
           >
             ✨ ZorrID Creator ✨
           </h1>
-          <p className="text-gray-700 text-lg font-poppins">Convertite en miembro oficial del santuario secreto</p>
+          <p className="text-gray-700 text-lg font-poppins mb-6">Convertite en miembro oficial del santuario secreto</p>
+
+          {/* Botón para volver al home */}
+          <div className="mb-6">
+            <Link href="/">
+              <Button
+                variant="outline"
+                className="border-rozu-pink-light text-rozu-purple-dark hover:bg-rozu-pink-light hover:text-rozu-purple-dark font-poppins bg-transparent"
+              >
+                ← Volver al Home
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <Card className="bg-white/80 backdrop-blur-sm border-rozu-pink-light shadow-xl">
@@ -815,7 +828,7 @@ export default function ZorrIDCard() {
           <Button
             onClick={downloadCard}
             disabled={!cardId || isDownloading}
-            className="bg-gradient-to-r from-rozu-pink to-rozu-purple-medium hover:from-rozu-pink-dark hover:to-rozu-purple-medium text-white shadow-lg font-poppins disabled:opacity-50 px-8"
+            className="bg-gradient-to-r from-rozu-purple-dark to-rozu-purple-medium hover:from-gray-800 hover:to-rozu-purple-dark text-white shadow-lg font-poppins disabled:opacity-50 px-8"
             size="lg"
           >
             {isDownloading ? (
