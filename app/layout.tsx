@@ -1,12 +1,12 @@
 import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
-import { Nunito } from "next/font/google"
+import { Poppins } from "next/font/google"
 
-const nunito = Nunito({
+const poppins = Poppins({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800", "900"],
-  variable: "--font-nunito",
+  variable: "--font-poppins",
 })
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`${nunito.variable} font-nunito`}>
+    <html lang="es" className={`${poppins.variable} font-poppins`}>
       <body>{children}</body>
     </html>
   )

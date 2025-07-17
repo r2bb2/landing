@@ -8,7 +8,22 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
-import { Save, Eye, LogOut, ImageIcon, FileText, Calendar, Gamepad2, Video, HelpCircle, User, Mail } from "lucide-react"
+import {
+  Save,
+  Eye,
+  LogOut,
+  ImageIcon,
+  FileText,
+  Calendar,
+  Gamepad2,
+  Video,
+  HelpCircle,
+  User,
+  Mail,
+  Plus,
+  Trash2,
+  Tag,
+} from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 
@@ -29,11 +44,9 @@ interface ContentData {
       name: string
       time: string
       enabled: boolean
+      isRestDay: boolean
+      restText: string
     }>
-    restDay: {
-      name: string
-      text: string
-    }
     discordTitle: string
     discordText: string
     discordButtonText: string
@@ -78,6 +91,22 @@ interface ContentData {
     discord: string
     zorrid: string
   }
+  etiqueta: {
+    title: string
+    content: string
+    image1: string
+    image2: string
+  }
+  backgroundImages: {
+    hero: string
+    about: string
+    schedule: string
+    games: string
+    videos: string
+    faq: string
+    model: string
+    contact: string
+  }
 }
 
 const defaultData: ContentData = {
@@ -96,14 +125,14 @@ const defaultData: ContentData = {
     title: "Stream Schedule",
     subtitle: "",
     days: [
-      { name: "Monday", time: "8:00 PM ART", enabled: true },
-      { name: "Tuesday", time: "8:00 PM ART", enabled: true },
-      { name: "Wednesday", time: "8:00 PM ART", enabled: true },
-      { name: "Thursday", time: "8:00 PM ART", enabled: true },
-      { name: "Friday", time: "8:00 PM ART", enabled: true },
-      { name: "Saturday", time: "8:00 PM ART", enabled: true },
+      { name: "Monday", time: "8:00 PM ART", enabled: true, isRestDay: false, restText: "" },
+      { name: "Tuesday", time: "8:00 PM ART", enabled: true, isRestDay: false, restText: "" },
+      { name: "Wednesday", time: "8:00 PM ART", enabled: true, isRestDay: false, restText: "" },
+      { name: "Thursday", time: "8:00 PM ART", enabled: true, isRestDay: false, restText: "" },
+      { name: "Friday", time: "8:00 PM ART", enabled: true, isRestDay: false, restText: "" },
+      { name: "Saturday", time: "8:00 PM ART", enabled: true, isRestDay: false, restText: "" },
+      { name: "Sunday", time: "", enabled: true, isRestDay: true, restText: "Rest Day 😴" },
     ],
-    restDay: { name: "Sunday", text: "Rest Day 😴" },
     discordTitle: "Stay Updated",
     discordText: "All stream announcements are made on Discord! Join our cozy community to never miss a stream! 💖",
     discordButtonText: "Join Discord Server",
@@ -245,6 +274,23 @@ const defaultData: ContentData = {
     discord: "https://discord.gg/rozuvt",
     zorrid: "https://zorrid.com/creator",
   },
+  etiqueta: {
+    title: "Etiqueta VTuber",
+    content:
+      "Bienvenidos a mi página de etiqueta VTuber. Aquí encontrarás toda la información importante sobre las reglas de mi comunidad, cómo interactuar en mis streams y qué esperar de mi contenido. Mi objetivo es crear un espacio seguro y divertido para todos! 🦊✨\n\nRecuerda siempre ser respetuoso con otros viewers, evitar el spam en el chat, y sobre todo... ¡diviértete! Estoy aquí para crear momentos mágicos juntos.",
+    image1: "/placeholder.svg?height=400&width=600",
+    image2: "/placeholder.svg?height=400&width=600",
+  },
+  backgroundImages: {
+    hero: "",
+    about: "",
+    schedule: "",
+    games: "",
+    videos: "",
+    faq: "",
+    model: "",
+    contact: "",
+  },
 }
 
 const extractYouTubeId = (url: string): string => {
@@ -314,7 +360,34 @@ export default function AdminPanel() {
     // Load saved content data
     const savedData = localStorage.getItem("rozu-content-data")
     if (savedData) {
-      setContentData(JSON.parse(savedData))
+      try {
+        const parsedData = JSON.parse(savedData)
+        // Migrate old data structure if needed
+        if (parsedData.schedule && parsedData.schedule.days) {
+          parsedData.schedule.days = parsedData.schedule.days.map((day: any) => ({
+            ...day,
+            isRestDay: day.isRestDay || false,
+            restText: day.restText || (day.name === "Sunday" ? "Rest Day 😴" : ""),
+          }))
+        }
+        // Add missing properties with defaults
+        const migratedData = {
+          ...defaultData,
+          ...parsedData,
+          etiqueta: {
+            ...defaultData.etiqueta,
+            ...parsedData.etiqueta,
+          },
+          backgroundImages: {
+            ...defaultData.backgroundImages,
+            ...parsedData.backgroundImages,
+          },
+        }
+        setContentData(migratedData)
+      } catch (error) {
+        console.error("Error parsing saved data:", error)
+        setContentData(defaultData)
+      }
     }
   }, [])
 
@@ -364,9 +437,45 @@ export default function AdminPanel() {
           ...prev,
           modelImages: prev.modelImages.map((img, i) => (i === index ? { ...img, src: result } : img)),
         }))
+      } else if (section === "etiqueta" && field === "image1") {
+        setContentData((prev) => ({
+          ...prev,
+          etiqueta: { ...prev.etiqueta, image1: result },
+        }))
+      } else if (section === "etiqueta" && field === "image2") {
+        setContentData((prev) => ({
+          ...prev,
+          etiqueta: { ...prev.etiqueta, image2: result },
+        }))
+      } else if (section === "backgrounds" && field) {
+        setContentData((prev) => ({
+          ...prev,
+          backgroundImages: { ...prev.backgroundImages, [field]: result },
+        }))
       }
     }
     reader.readAsDataURL(file)
+  }
+
+  const addFAQ = () => {
+    setContentData((prev) => ({
+      ...prev,
+      faqs: [
+        ...prev.faqs,
+        {
+          question: "Nueva pregunta",
+          answer: "Nueva respuesta",
+          icon: "❓",
+        },
+      ],
+    }))
+  }
+
+  const removeFAQ = (index: number) => {
+    setContentData((prev) => ({
+      ...prev,
+      faqs: prev.faqs.filter((_, i) => i !== index),
+    }))
   }
 
   if (!isAuthenticated) {
@@ -411,25 +520,28 @@ export default function AdminPanel() {
       <header className="bg-white/80 backdrop-blur-md shadow-lg">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-rozu-pink to-rozu-purple-medium bg-clip-text text-transparent">
+            <h1 className="text-lg lg:text-2xl font-bold bg-gradient-to-r from-rozu-pink to-rozu-purple-medium bg-clip-text text-transparent">
               Panel de Administración - RozuVT
             </h1>
-            <div className="flex gap-2">
+            <div className="flex gap-1 lg:gap-2">
               <Button
                 onClick={() => window.open("/", "_blank")}
                 variant="outline"
-                className="border-rozu-pink text-rozu-pink hover:bg-rozu-pink hover:text-white"
+                className="border-rozu-pink text-rozu-pink hover:bg-rozu-pink hover:text-white text-xs lg:text-sm px-2 lg:px-4"
               >
-                <Eye className="w-4 h-4 mr-2" />
-                Ver Landing
+                <Eye className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                <span className="hidden sm:inline">Ver Landing</span>
+                <span className="sm:hidden">Ver</span>
               </Button>
-              <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
-                <Save className="w-4 h-4 mr-2" />
-                Guardar
+              <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-xs lg:text-sm px-2 lg:px-4">
+                <Save className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                <span className="hidden sm:inline">Guardar</span>
+                <span className="sm:hidden">Save</span>
               </Button>
-              <Button onClick={handleLogout} variant="destructive">
-                <LogOut className="w-4 h-4 mr-2" />
-                Salir
+              <Button onClick={handleLogout} variant="destructive" className="text-xs lg:text-sm px-2 lg:px-4">
+                <LogOut className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                <span className="hidden sm:inline">Salir</span>
+                <span className="sm:hidden">Exit</span>
               </Button>
             </div>
           </div>
@@ -439,41 +551,49 @@ export default function AdminPanel() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-4 lg:grid-cols-8 gap-2 h-auto p-2 bg-white/80 backdrop-blur-sm">
-            <TabsTrigger value="hero" className="flex flex-col gap-1 p-3">
-              <User className="w-4 h-4" />
+          <TabsList className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-10 gap-1 lg:gap-2 h-auto p-1 lg:p-2 bg-white/80 backdrop-blur-sm">
+            <TabsTrigger value="hero" className="flex flex-col gap-1 p-2 lg:p-3">
+              <User className="w-3 h-3 lg:w-4 lg:h-4" />
               <span className="text-xs">Hero</span>
             </TabsTrigger>
-            <TabsTrigger value="about" className="flex flex-col gap-1 p-3">
-              <FileText className="w-4 h-4" />
+            <TabsTrigger value="about" className="flex flex-col gap-1 p-2 lg:p-3">
+              <FileText className="w-3 h-3 lg:w-4 lg:h-4" />
               <span className="text-xs">About</span>
             </TabsTrigger>
-            <TabsTrigger value="schedule" className="flex flex-col gap-1 p-3">
-              <Calendar className="w-4 h-4" />
+            <TabsTrigger value="schedule" className="flex flex-col gap-1 p-2 lg:p-3">
+              <Calendar className="w-3 h-3 lg:w-4 lg:h-4" />
               <span className="text-xs">Schedule</span>
             </TabsTrigger>
-            <TabsTrigger value="games" className="flex flex-col gap-1 p-3">
-              <Gamepad2 className="w-4 h-4" />
+            <TabsTrigger value="games" className="flex flex-col gap-1 p-2 lg:p-3">
+              <Gamepad2 className="w-3 h-3 lg:w-4 lg:h-4" />
               <span className="text-xs">Games</span>
             </TabsTrigger>
-            <TabsTrigger value="videos" className="flex flex-col gap-1 p-3">
-              <Video className="w-4 h-4" />
+            <TabsTrigger value="videos" className="flex flex-col gap-1 p-2 lg:p-3">
+              <Video className="w-3 h-3 lg:w-4 lg:h-4" />
               <span className="text-xs">Videos</span>
             </TabsTrigger>
-            <TabsTrigger value="faq" className="flex flex-col gap-1 p-3">
-              <HelpCircle className="w-4 h-4" />
+            <TabsTrigger value="faq" className="flex flex-col gap-1 p-2 lg:p-3">
+              <HelpCircle className="w-3 h-3 lg:w-4 lg:h-4" />
               <span className="text-xs">FAQ</span>
             </TabsTrigger>
-            <TabsTrigger value="model" className="flex flex-col gap-1 p-3">
-              <ImageIcon className="w-4 h-4" />
+            <TabsTrigger value="model" className="flex flex-col gap-1 p-2 lg:p-3">
+              <ImageIcon className="w-3 h-3 lg:w-4 lg:h-4" />
               <span className="text-xs">Model</span>
             </TabsTrigger>
-            <TabsTrigger value="contact" className="flex flex-col gap-1 p-3">
-              <Mail className="w-4 h-4" />
+            <TabsTrigger value="contact" className="flex flex-col gap-1 p-2 lg:p-3">
+              <Mail className="w-3 h-3 lg:w-4 lg:h-4" />
               <span className="text-xs">Contact</span>
             </TabsTrigger>
-            <TabsTrigger value="footer" className="flex flex-col gap-1 p-3">
-              <FileText className="w-4 h-4" />
+            <TabsTrigger value="etiqueta" className="flex flex-col gap-1 p-2 lg:p-3">
+              <Tag className="w-3 h-3 lg:w-4 lg:h-4" />
+              <span className="text-xs">Etiqueta</span>
+            </TabsTrigger>
+            <TabsTrigger value="backgrounds" className="flex flex-col gap-1 p-2 lg:p-3">
+              <ImageIcon className="w-3 h-3 lg:w-4 lg:h-4" />
+              <span className="text-xs">Fondos</span>
+            </TabsTrigger>
+            <TabsTrigger value="footer" className="flex flex-col gap-1 p-2 lg:p-3">
+              <FileText className="w-3 h-3 lg:w-4 lg:h-4" />
               <span className="text-xs">Footer</span>
             </TabsTrigger>
           </TabsList>
@@ -589,7 +709,7 @@ export default function AdminPanel() {
                 {contentData.games.map((game, index) => (
                   <div key={index} className="p-4 border rounded-lg space-y-4">
                     <h3 className="font-semibold text-lg">Juego {index + 1}</h3>
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label>Nombre del Juego</Label>
                         <Input
@@ -695,7 +815,7 @@ export default function AdminPanel() {
                       </div>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       <div>
                         <Label>Título del Video</Label>
                         <Input
@@ -788,13 +908,24 @@ export default function AdminPanel() {
           <TabsContent value="faq">
             <Card>
               <CardHeader>
-                <CardTitle>Sección FAQ</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  Sección FAQ
+                  <Button onClick={addFAQ} className="bg-rozu-pink hover:bg-rozu-pink-dark">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Agregar FAQ
+                  </Button>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {contentData.faqs.map((faq, index) => (
                   <div key={index} className="p-4 border rounded-lg space-y-4">
-                    <h3 className="font-semibold text-lg">FAQ {index + 1}</h3>
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-lg">FAQ {index + 1}</h3>
+                      <Button onClick={() => removeFAQ(index)} variant="destructive" size="sm" className="h-8 w-8 p-0">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label>Pregunta</Label>
                         <Input
@@ -852,7 +983,7 @@ export default function AdminPanel() {
                 {contentData.modelImages.map((image, index) => (
                   <div key={index} className="p-4 border rounded-lg space-y-4">
                     <h3 className="font-semibold text-lg">Imagen {index + 1}</h3>
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label>Título</Label>
                         <Input
@@ -1029,7 +1160,7 @@ export default function AdminPanel() {
                 <CardTitle>Sección Schedule</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label>Título Principal</Label>
                     <Input
@@ -1059,97 +1190,127 @@ export default function AdminPanel() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-lg mb-4">Días de Stream</h3>
-                  <div className="space-y-3">
+                  <h3 className="font-semibold text-lg mb-4">Configuración de Días</h3>
+                  <div className="space-y-4">
                     {contentData.schedule.days.map((day, index) => (
-                      <div key={index} className="flex items-center gap-4 p-3 border rounded-lg">
-                        <input
-                          type="checkbox"
-                          checked={day.enabled}
-                          onChange={(e) =>
-                            setContentData((prev) => ({
-                              ...prev,
-                              schedule: {
-                                ...prev.schedule,
-                                days: prev.schedule.days.map((d, i) =>
-                                  i === index ? { ...d, enabled: e.target.checked } : d,
-                                ),
-                              },
-                            }))
-                          }
-                          className="w-4 h-4"
-                        />
-                        <div className="flex-1">
-                          <Input
-                            value={day.name}
-                            onChange={(e) =>
-                              setContentData((prev) => ({
-                                ...prev,
-                                schedule: {
-                                  ...prev.schedule,
-                                  days: prev.schedule.days.map((d, i) =>
-                                    i === index ? { ...d, name: e.target.value } : d,
-                                  ),
-                                },
-                              }))
-                            }
-                            placeholder="Día"
-                          />
+                      <div key={index} className="p-4 border rounded-lg space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-base">{day.name}</h4>
+                          <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={day.enabled}
+                                onChange={(e) =>
+                                  setContentData((prev) => ({
+                                    ...prev,
+                                    schedule: {
+                                      ...prev.schedule,
+                                      days: prev.schedule.days.map((d, i) =>
+                                        i === index ? { ...d, enabled: e.target.checked } : d,
+                                      ),
+                                    },
+                                  }))
+                                }
+                                className="w-4 h-4"
+                              />
+                              <span className="text-sm">Mostrar</span>
+                            </label>
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={day.isRestDay}
+                                onChange={(e) =>
+                                  setContentData((prev) => ({
+                                    ...prev,
+                                    schedule: {
+                                      ...prev.schedule,
+                                      days: prev.schedule.days.map((d, i) =>
+                                        i === index ? { ...d, isRestDay: e.target.checked } : d,
+                                      ),
+                                    },
+                                  }))
+                                }
+                                className="w-4 h-4"
+                              />
+                              <span className="text-sm">Día de descanso</span>
+                            </label>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <Input
-                            value={day.time}
-                            onChange={(e) =>
-                              setContentData((prev) => ({
-                                ...prev,
-                                schedule: {
-                                  ...prev.schedule,
-                                  days: prev.schedule.days.map((d, i) =>
-                                    i === index ? { ...d, time: e.target.value } : d,
-                                  ),
-                                },
-                              }))
-                            }
-                            placeholder="Hora"
-                          />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label>Nombre del día</Label>
+                            <Input
+                              value={day.name}
+                              onChange={(e) =>
+                                setContentData((prev) => ({
+                                  ...prev,
+                                  schedule: {
+                                    ...prev.schedule,
+                                    days: prev.schedule.days.map((d, i) =>
+                                      i === index ? { ...d, name: e.target.value } : d,
+                                    ),
+                                  },
+                                }))
+                              }
+                              className="mt-1"
+                              placeholder="Ej: Monday"
+                            />
+                          </div>
+
+                          {day.isRestDay ? (
+                            <div>
+                              <Label>Texto de descanso</Label>
+                              <Input
+                                value={day.restText}
+                                onChange={(e) =>
+                                  setContentData((prev) => ({
+                                    ...prev,
+                                    schedule: {
+                                      ...prev.schedule,
+                                      days: prev.schedule.days.map((d, i) =>
+                                        i === index ? { ...d, restText: e.target.value } : d,
+                                      ),
+                                    },
+                                  }))
+                                }
+                                className="mt-1"
+                                placeholder="Ej: Rest Day 😴"
+                              />
+                            </div>
+                          ) : (
+                            <div>
+                              <Label>Hora de stream</Label>
+                              <Input
+                                value={day.time}
+                                onChange={(e) =>
+                                  setContentData((prev) => ({
+                                    ...prev,
+                                    schedule: {
+                                      ...prev.schedule,
+                                      days: prev.schedule.days.map((d, i) =>
+                                        i === index ? { ...d, time: e.target.value } : d,
+                                      ),
+                                    },
+                                  }))
+                                }
+                                className="mt-1"
+                                placeholder="Ej: 8:00 PM ART"
+                              />
+                            </div>
+                          )}
                         </div>
+
+                        {day.isRestDay && (
+                          <div className="p-3 bg-gray-50 rounded-lg">
+                            <p className="text-sm text-gray-600">
+                              💡 Este día se mostrará como día de descanso con el texto personalizado.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ))}
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Día de Descanso</Label>
-                    <Input
-                      value={contentData.schedule.restDay.name}
-                      onChange={(e) =>
-                        setContentData((prev) => ({
-                          ...prev,
-                          schedule: {
-                            ...prev.schedule,
-                            restDay: { ...prev.schedule.restDay, name: e.target.value },
-                          },
-                        }))
-                      }
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label>Texto del Día de Descanso</Label>
-                    <Input
-                      value={contentData.schedule.restDay.text}
-                      onChange={(e) =>
-                        setContentData((prev) => ({
-                          ...prev,
-                          schedule: {
-                            ...prev.schedule,
-                            restDay: { ...prev.schedule.restDay, text: e.target.value },
-                          },
-                        }))
-                      }
-                      className="mt-1"
-                    />
                   </div>
                 </div>
 
@@ -1209,6 +1370,140 @@ export default function AdminPanel() {
                     className="mt-1"
                   />
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Etiqueta Section */}
+          <TabsContent value="etiqueta">
+            <Card>
+              <CardHeader>
+                <CardTitle>Página Etiqueta</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <Label>Título de la página</Label>
+                  <Input
+                    value={contentData.etiqueta.title}
+                    onChange={(e) =>
+                      setContentData((prev) => ({
+                        ...prev,
+                        etiqueta: { ...prev.etiqueta, title: e.target.value },
+                      }))
+                    }
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>Contenido</Label>
+                  <Textarea
+                    value={contentData.etiqueta.content}
+                    onChange={(e) =>
+                      setContentData((prev) => ({
+                        ...prev,
+                        etiqueta: { ...prev.etiqueta, content: e.target.value },
+                      }))
+                    }
+                    className="mt-1"
+                    rows={8}
+                    placeholder="Escribe el contenido de la página Etiqueta..."
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <Label>Primera Imagen</Label>
+                    <div className="mt-2 space-y-2">
+                      <div className="relative w-full h-32 bg-gray-100 rounded-lg overflow-hidden">
+                        <Image
+                          src={contentData.etiqueta.image1 || "/placeholder.svg"}
+                          alt="Etiqueta Image 1"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) handleImageUpload(file, "etiqueta", undefined, "image1")
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Segunda Imagen</Label>
+                    <div className="mt-2 space-y-2">
+                      <div className="relative w-full h-32 bg-gray-100 rounded-lg overflow-hidden">
+                        <Image
+                          src={contentData.etiqueta.image2 || "/placeholder.svg"}
+                          alt="Etiqueta Image 2"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) handleImageUpload(file, "etiqueta", undefined, "image2")
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Background Images Section */}
+          <TabsContent value="backgrounds">
+            <Card>
+              <CardHeader>
+                <CardTitle>Imágenes de Fondo</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {Object.entries(contentData.backgroundImages).map(([section, image]) => (
+                  <div key={section} className="p-4 border rounded-lg space-y-4">
+                    <h3 className="font-semibold text-lg capitalize">Sección {section}</h3>
+                    <div>
+                      <Label>Imagen de fondo</Label>
+                      <div className="mt-2 space-y-2">
+                        <div className="relative w-full h-24 bg-gray-100 rounded-lg overflow-hidden">
+                          <Image
+                            src={image || "/placeholder.svg"}
+                            alt={`${section} background`}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) handleImageUpload(file, "backgrounds", undefined, section)
+                          }}
+                        />
+                        {image && (
+                          <Button
+                            onClick={() =>
+                              setContentData((prev) => ({
+                                ...prev,
+                                backgroundImages: { ...prev.backgroundImages, [section]: "" },
+                              }))
+                            }
+                            variant="outline"
+                            size="sm"
+                          >
+                            Remover fondo
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </TabsContent>

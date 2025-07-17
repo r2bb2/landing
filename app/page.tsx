@@ -28,11 +28,9 @@ interface ContentData {
       name: string
       time: string
       enabled: boolean
+      isRestDay: boolean
+      restText: string
     }>
-    restDay: {
-      name: string
-      text: string
-    }
     discordTitle: string
     discordText: string
     discordButtonText: string
@@ -77,17 +75,47 @@ interface ContentData {
     discord: string
     zorrid: string
   }
+  etiqueta: {
+    title: string
+    content: string
+    image1: string
+    image2: string
+  }
+  backgroundImages: {
+    hero: string
+    about: string
+    schedule: string
+    games: string
+    videos: string
+    faq: string
+    model: string
+    contact: string
+  }
 }
 
 export default function RozuLanding() {
   const [activeSection, setActiveSection] = useState("home")
   const [contentData, setContentData] = useState<ContentData | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     // Load content data from localStorage
     const savedData = localStorage.getItem("rozu-content-data")
     if (savedData) {
-      setContentData(JSON.parse(savedData))
+      try {
+        const parsedData = JSON.parse(savedData)
+        // Migrate old data structure if needed
+        if (parsedData.schedule && parsedData.schedule.days) {
+          parsedData.schedule.days = parsedData.schedule.days.map((day: any) => ({
+            ...day,
+            isRestDay: day.isRestDay || false,
+            restText: day.restText || (day.name === "Sunday" ? "Rest Day 😴" : ""),
+          }))
+        }
+        setContentData(parsedData)
+      } catch (error) {
+        console.error("Error parsing saved data:", error)
+      }
     }
   }, [])
 
@@ -108,14 +136,14 @@ export default function RozuLanding() {
       title: "Stream Schedule",
       subtitle: "",
       days: [
-        { name: "Monday", time: "8:00 PM ART", enabled: true },
-        { name: "Tuesday", time: "8:00 PM ART", enabled: true },
-        { name: "Wednesday", time: "8:00 PM ART", enabled: true },
-        { name: "Thursday", time: "8:00 PM ART", enabled: true },
-        { name: "Friday", time: "8:00 PM ART", enabled: true },
-        { name: "Saturday", time: "8:00 PM ART", enabled: true },
+        { name: "Monday", time: "8:00 PM ART", enabled: true, isRestDay: false, restText: "" },
+        { name: "Tuesday", time: "8:00 PM ART", enabled: true, isRestDay: false, restText: "" },
+        { name: "Wednesday", time: "8:00 PM ART", enabled: true, isRestDay: false, restText: "" },
+        { name: "Thursday", time: "8:00 PM ART", enabled: true, isRestDay: false, restText: "" },
+        { name: "Friday", time: "8:00 PM ART", enabled: true, isRestDay: false, restText: "" },
+        { name: "Saturday", time: "8:00 PM ART", enabled: true, isRestDay: false, restText: "" },
+        { name: "Sunday", time: "", enabled: true, isRestDay: true, restText: "Rest Day 😴" },
       ],
-      restDay: { name: "Sunday", text: "Rest Day 😴" },
       discordTitle: "Stay Updated",
       discordText: "All stream announcements are made on Discord! Join our cozy community to never miss a stream! 💖",
       discordButtonText: "Join Discord Server",
@@ -258,6 +286,23 @@ export default function RozuLanding() {
       discord: "https://discord.gg/rozuvt",
       zorrid: "https://zorrid.com/creator",
     },
+    etiqueta: {
+      title: "Etiqueta VTuber",
+      content:
+        "Bienvenidos a mi página de etiqueta VTuber. Aquí encontrarás toda la información importante sobre las reglas de mi comunidad, cómo interactuar en mis streams y qué esperar de mi contenido. Mi objetivo es crear un espacio seguro y divertido para todos! 🦊✨\n\nRecuerda siempre ser respetuoso con otros viewers, evitar el spam en el chat, y sobre todo... ¡diviértete! Estoy aquí para crear momentos mágicos juntos.",
+      image1: "/placeholder.svg?height=400&width=600",
+      image2: "/placeholder.svg?height=400&width=600",
+    },
+    backgroundImages: {
+      hero: "",
+      about: "",
+      schedule: "",
+      games: "",
+      videos: "",
+      faq: "",
+      model: "",
+      contact: "",
+    },
   }
 
   const data = contentData || defaultData
@@ -268,6 +313,19 @@ export default function RozuLanding() {
       element.scrollIntoView({ behavior: "smooth" })
       setActiveSection(sectionId)
     }
+  }
+
+  const getSectionStyle = (sectionName: keyof typeof data.backgroundImages) => {
+    const backgroundImage = data.backgroundImages[sectionName]
+    if (backgroundImage) {
+      return {
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }
+    }
+    return {}
   }
 
   return (
@@ -315,29 +373,135 @@ export default function RozuLanding() {
                   {item.label}
                 </motion.button>
               ))}
+
+              {/* Etiqueta Button */}
+              <Link href="/etiqueta">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 rounded-full font-medium transition-all text-gray-600 hover:text-rozu-pink"
+                >
+                  Etiqueta
+                </motion.button>
+              </Link>
+
+              {/* ZorrID Button - Updated to redirect internally */}
+              <Link href="/zorrid">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 rounded-full font-medium transition-all text-gray-600 hover:text-rozu-pink"
+                >
+                  ZorrID
+                </motion.button>
+              </Link>
             </nav>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg bg-rozu-pink-light/20"
+            >
+              <div className="w-6 h-6 flex flex-col justify-center items-center">
+                <span
+                  className={`bg-rozu-pink block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${mobileMenuOpen ? "rotate-45 translate-y-1" : "-translate-y-0.5"}`}
+                ></span>
+                <span
+                  className={`bg-rozu-pink block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5 ${mobileMenuOpen ? "opacity-0" : "opacity-100"}`}
+                ></span>
+                <span
+                  className={`bg-rozu-pink block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm ${mobileMenuOpen ? "-rotate-45 -translate-y-1" : "translate-y-0.5"}`}
+                ></span>
+              </div>
+            </button>
           </div>
         </div>
       </motion.header>
 
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="md:hidden fixed top-20 left-0 right-0 bg-white/95 backdrop-blur-md shadow-lg z-40 border-t"
+        >
+          <div className="container mx-auto px-4 py-4">
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { id: "home", label: "Home" },
+                { id: "about", label: "About" },
+                { id: "schedule", label: "Schedule" },
+                { id: "games", label: "Games" },
+                { id: "videos", label: "Videos" },
+                { id: "faq", label: "FAQ" },
+                { id: "model", label: "Model" },
+                { id: "contact", label: "Contact" },
+              ].map((item) => (
+                <motion.button
+                  key={item.id}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    scrollToSection(item.id)
+                    setMobileMenuOpen(false)
+                  }}
+                  className={`px-4 py-3 rounded-xl font-medium transition-all text-center ${
+                    activeSection === item.id
+                      ? "bg-rozu-pink-medium text-white"
+                      : "text-gray-600 hover:text-rozu-pink hover:bg-rozu-pink-light/20"
+                  }`}
+                >
+                  {item.label}
+                </motion.button>
+              ))}
+
+              {/* Mobile Etiqueta Button */}
+              <Link href="/etiqueta">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-4 py-3 rounded-xl font-medium transition-all text-center text-gray-600 hover:text-rozu-pink hover:bg-rozu-pink-light/20 w-full"
+                >
+                  Etiqueta
+                </motion.button>
+              </Link>
+
+              {/* Mobile ZorrID Button - Updated to redirect internally */}
+              <Link href="/zorrid">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-4 py-3 rounded-xl font-medium transition-all text-center text-gray-600 hover:text-rozu-pink hover:bg-rozu-pink-light/20 w-full"
+                >
+                  ZorrID
+                </motion.button>
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Hero Section */}
-      <section id="home" className="pt-20 min-h-screen flex items-center">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section id="home" className="pt-20 min-h-screen flex items-center relative" style={getSectionStyle("hero")}>
+        {data.backgroundImages.hero && <div className="absolute inset-0 bg-black/20"></div>}
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <motion.div
               initial={{ x: -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="space-y-6"
+              className="space-y-4 lg:space-y-6 text-center lg:text-left order-2 lg:order-1"
             >
-              <h1 className="text-5xl md:text-7xl font-black bg-gradient-to-r from-rozu-pink to-rozu-purple-medium bg-clip-text text-transparent">
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-black bg-gradient-to-r from-rozu-pink to-rozu-purple-medium bg-clip-text text-transparent">
                 {data.hero.title}
               </h1>
-              <p className="text-xl text-rozu-purple-dark leading-relaxed">{data.hero.subtitle}</p>
-              <div className="flex gap-4">
+              <p className="text-lg lg:text-xl text-rozu-purple-dark leading-relaxed px-4 lg:px-0">
+                {data.hero.subtitle}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start px-4 lg:px-0">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link href={data.socialLinks.twitch} target="_blank">
-                    <Button className="bg-[#413447] hover:bg-rozu-purple-dark text-white px-6 py-3 rounded-full">
+                    <Button className="bg-[#413447] hover:bg-rozu-purple-dark text-white px-6 py-3 rounded-full w-full sm:w-auto">
                       <Twitch className="w-5 h-5 mr-2" />
                       Twitch
                     </Button>
@@ -345,7 +509,7 @@ export default function RozuLanding() {
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link href={data.socialLinks.twitter} target="_blank">
-                    <Button className="bg-rozu-purple-medium hover:bg-rozu-purple-dark text-white px-6 py-3 rounded-full">
+                    <Button className="bg-rozu-purple-medium hover:bg-rozu-purple-dark text-white px-6 py-3 rounded-full w-full sm:w-auto">
                       <Twitter className="w-5 h-5 mr-2" />
                       Twitter
                     </Button>
@@ -353,7 +517,7 @@ export default function RozuLanding() {
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link href={data.socialLinks.youtube} target="_blank">
-                    <Button className="bg-rozu-pink hover:bg-rozu-pink-dark text-white px-6 py-3 rounded-full">
+                    <Button className="bg-rozu-pink hover:bg-rozu-pink-dark text-white px-6 py-3 rounded-full w-full sm:w-auto">
                       <Youtube className="w-5 h-5 mr-2" />
                       YouTube
                     </Button>
@@ -366,9 +530,9 @@ export default function RozuLanding() {
               initial={{ x: 100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative"
+              className="relative order-1 lg:order-2 px-4 lg:px-0"
             >
-              <div className="relative w-full h-96 bg-gradient-to-br from-pink-200 to-purple-300 rounded-3xl overflow-hidden shadow-2xl">
+              <div className="relative w-full h-64 sm:h-80 lg:h-96 bg-gradient-to-br from-pink-200 to-purple-300 rounded-3xl overflow-hidden shadow-2xl">
                 <Image
                   src={data.hero.heroImage || "/placeholder.svg"}
                   alt="Rozu Hero Banner"
@@ -377,18 +541,18 @@ export default function RozuLanding() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-pink-500/20 to-transparent" />
               </div>
-              {/* Floating elements */}
+              {/* Floating elements - hide on mobile for cleaner look */}
               <motion.div
                 animate={{ y: [-10, 10, -10] }}
                 transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
-                className="absolute -top-4 -right-4 w-12 h-12 bg-rozu-pink rounded-full flex items-center justify-center shadow-lg"
+                className="hidden sm:block absolute -top-4 -right-4 w-12 h-12 bg-rozu-pink rounded-full flex items-center justify-center shadow-lg"
               >
                 <Heart className="w-6 h-6 text-white" />
               </motion.div>
               <motion.div
                 animate={{ y: [10, -10, 10] }}
                 transition={{ duration: 2.5, repeat: Number.POSITIVE_INFINITY }}
-                className="absolute -bottom-4 -left-4 w-10 h-10 bg-rozu-purple-medium rounded-full flex items-center justify-center shadow-lg"
+                className="hidden sm:block absolute -bottom-4 -left-4 w-10 h-10 bg-rozu-purple-medium rounded-full flex items-center justify-center shadow-lg"
               >
                 <Sparkles className="w-5 h-5 text-white" />
               </motion.div>
@@ -398,8 +562,9 @@ export default function RozuLanding() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-20">
-        <div className="container mx-auto px-4">
+      <section id="about" className="py-12 lg:py-20 px-4 lg:px-0 relative" style={getSectionStyle("about")}>
+        {data.backgroundImages.about && <div className="absolute inset-0 bg-black/20"></div>}
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
@@ -416,8 +581,13 @@ export default function RozuLanding() {
       </section>
 
       {/* Schedule Section */}
-      <section id="schedule" className="py-20 bg-gradient-to-r from-rozu-pink-light to-rozu-blue-light">
-        <div className="container mx-auto px-4">
+      <section
+        id="schedule"
+        className="py-12 lg:py-20 px-4 lg:px-0 bg-gradient-to-r from-rozu-pink-light to-rozu-blue-light relative"
+        style={getSectionStyle("schedule")}
+      >
+        {data.backgroundImages.schedule && <div className="absolute inset-0 bg-black/20"></div>}
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
@@ -431,64 +601,86 @@ export default function RozuLanding() {
             {data.schedule.subtitle && <p className="text-lg text-gray-600">{data.schedule.subtitle}</p>}
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="space-y-8 max-w-6xl mx-auto">
+            {/* Weekly Schedule - Horizontal */}
             <motion.div
-              initial={{ x: -50, opacity: 0 }}
-              whileInView={{ x: 0, opacity: 1 }}
+              initial={{ y: 50, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               viewport={{ once: true }}
             >
               <Card className="bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl overflow-hidden">
-                <CardContent className="p-8">
+                <CardContent className="p-6 lg:p-8">
                   <div className="flex items-center gap-3 mb-6">
                     <Calendar className="w-8 h-8 text-rozu-pink" />
                     <h3 className="text-2xl font-bold text-gray-800">Weekly Schedule</h3>
                   </div>
-                  <div className="space-y-4">
+
+                  {/* Horizontal days layout */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 lg:gap-4">
                     {data.schedule.days
                       .filter((day) => day.enabled)
                       .map((day) => (
                         <div
                           key={day.name}
-                          className="flex items-center justify-between p-3 bg-rozu-pink-light/30 rounded-xl"
+                          className={`flex flex-col items-center p-3 lg:p-4 rounded-xl text-center ${
+                            day.isRestDay ? "bg-gray-100" : "bg-rozu-pink-light/30"
+                          }`}
                         >
-                          <span className="font-medium text-gray-700">{day.name}</span>
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-rozu-pink" />
-                            <span className="text-rozu-pink font-medium">{day.time}</span>
-                          </div>
+                          <span
+                            className={`font-semibold text-sm lg:text-base mb-2 ${
+                              day.isRestDay ? "text-gray-500" : "text-gray-700"
+                            }`}
+                          >
+                            {day.name}
+                          </span>
+                          {day.isRestDay ? (
+                            <span className="text-gray-400 text-xs lg:text-sm">{day.restText}</span>
+                          ) : (
+                            <div className="flex flex-col items-center gap-1">
+                              <Clock className="w-4 h-4 text-rozu-pink" />
+                              <span className="text-rozu-pink font-medium text-xs lg:text-sm">{day.time}</span>
+                            </div>
+                          )}
                         </div>
                       ))}
-                    <div className="flex items-center justify-between p-3 bg-gray-100 rounded-xl">
-                      <span className="font-medium text-gray-500">{data.schedule.restDay.name}</span>
-                      <span className="text-gray-400">{data.schedule.restDay.text}</span>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
 
+            {/* Stay Updated - Horizontal */}
             <motion.div
-              initial={{ x: 50, opacity: 0 }}
-              whileInView={{ x: 0, opacity: 1 }}
+              initial={{ y: 50, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
               viewport={{ once: true }}
             >
               <Card className="bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <MessageCircle className="w-8 h-8 text-rozu-purple-medium" />
-                    <h3 className="text-2xl font-bold text-gray-800">{data.schedule.discordTitle}</h3>
-                  </div>
-                  <div className="space-y-4">
-                    <p className="text-gray-600">{data.schedule.discordText}</p>
-                    <Link href={data.socialLinks.discord} target="_blank">
-                      <Button className="w-full bg-rozu-purple-medium hover:bg-rozu-blue-light text-white py-3 rounded-xl">
-                        <MessageCircle className="w-5 h-5 mr-2" />
-                        {data.schedule.discordButtonText}
-                      </Button>
-                    </Link>
-                    <div className="text-center text-sm text-gray-500">{data.schedule.scheduleNote}</div>
+                <CardContent className="p-6 lg:p-8">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    {/* Left side - Title and description */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-4">
+                        <MessageCircle className="w-8 h-8 text-rozu-purple-medium" />
+                        <h3 className="text-2xl font-bold text-gray-800">{data.schedule.discordTitle}</h3>
+                      </div>
+                      <p className="text-gray-600 mb-4 lg:mb-0">{data.schedule.discordText}</p>
+                      <div className="text-sm text-gray-500 lg:hidden">{data.schedule.scheduleNote}</div>
+                    </div>
+
+                    {/* Right side - Button and note */}
+                    <div className="flex flex-col items-center lg:items-end gap-3 lg:min-w-[280px]">
+                      <Link href={data.socialLinks.discord} target="_blank">
+                        <Button className="bg-rozu-purple-medium hover:bg-rozu-blue-light text-white px-6 py-3 rounded-xl w-full lg:w-auto">
+                          <MessageCircle className="w-5 h-5 mr-2" />
+                          {data.schedule.discordButtonText}
+                        </Button>
+                      </Link>
+                      <div className="hidden lg:block text-center text-sm text-gray-500">
+                        {data.schedule.scheduleNote}
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -498,8 +690,9 @@ export default function RozuLanding() {
       </section>
 
       {/* Games Section */}
-      <section id="games" className="py-20">
-        <div className="container mx-auto px-4">
+      <section id="games" className="py-12 lg:py-20 px-4 lg:px-0 relative" style={getSectionStyle("games")}>
+        {data.backgroundImages.games && <div className="absolute inset-0 bg-black/20"></div>}
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
@@ -513,7 +706,7 @@ export default function RozuLanding() {
             <p className="text-lg text-gray-600">From cozy farming to epic adventures - here are my go-to games!</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 max-w-6xl mx-auto">
             {data.games.map((game, index) => (
               <motion.div
                 key={game.name}
@@ -549,8 +742,13 @@ export default function RozuLanding() {
       </section>
 
       {/* Videos Section */}
-      <section id="videos" className="py-20 bg-gradient-to-r from-rozu-purple-medium/20 to-rozu-pink-light/50">
-        <div className="container mx-auto px-4">
+      <section
+        id="videos"
+        className="py-12 lg:py-20 px-4 lg:px-0 bg-gradient-to-r from-rozu-purple-medium/20 to-rozu-pink-light/50 relative"
+        style={getSectionStyle("videos")}
+      >
+        {data.backgroundImages.videos && <div className="absolute inset-0 bg-black/20"></div>}
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
@@ -564,7 +762,7 @@ export default function RozuLanding() {
             <p className="text-lg text-gray-600">Check out my latest stream highlights and special content!</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 max-w-6xl mx-auto">
             {data.videos.map((video, index) => (
               <motion.div
                 key={video.title}
@@ -608,8 +806,9 @@ export default function RozuLanding() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-20">
-        <div className="container mx-auto px-4">
+      <section id="faq" className="py-12 lg:py-20 px-4 lg:px-0 relative" style={getSectionStyle("faq")}>
+        {data.backgroundImages.faq && <div className="absolute inset-0 bg-black/20"></div>}
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
@@ -652,8 +851,13 @@ export default function RozuLanding() {
       </section>
 
       {/* Model & Reference Section */}
-      <section id="model" className="py-20 bg-gradient-to-r from-rozu-pink-light to-rozu-blue-light relative">
-        <div className="container mx-auto px-4">
+      <section
+        id="model"
+        className="py-12 lg:py-20 px-4 lg:px-0 bg-gradient-to-r from-rozu-pink-light to-rozu-blue-light relative"
+        style={getSectionStyle("model")}
+      >
+        {data.backgroundImages.model && <div className="absolute inset-0 bg-black/20"></div>}
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
@@ -667,7 +871,7 @@ export default function RozuLanding() {
             <p className="text-lg text-gray-600">Check out my kawaii model and adorable emotes!</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-12">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 max-w-6xl mx-auto mb-8 lg:mb-12">
             {data.modelImages.map((image, index) => (
               <motion.div
                 key={index}
@@ -698,7 +902,7 @@ export default function RozuLanding() {
             ))}
           </div>
 
-          {/* ZorrID Creator Button */}
+          {/* ZorrID Creator Button - Updated to redirect internally */}
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             whileInView={{ scale: 1, opacity: 1 }}
@@ -707,7 +911,7 @@ export default function RozuLanding() {
             className="flex justify-center"
           >
             <motion.div whileHover={{ scale: 1.1, y: -5 }} whileTap={{ scale: 0.95 }} className="relative">
-              <Link href={data.socialLinks.zorrid} target="_blank" rel="noopener noreferrer">
+              <Link href="/zorrid" rel="noopener noreferrer">
                 <Button className="bg-rozu-pink-medium hover:bg-rozu-purple-medium text-white px-8 py-4 rounded-2xl text-lg font-bold shadow-2xl relative overflow-hidden">
                   {/* Fox ears decoration */}
                   <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
@@ -729,8 +933,9 @@ export default function RozuLanding() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20">
-        <div className="container mx-auto px-4">
+      <section id="contact" className="py-12 lg:py-20 px-4 lg:px-0 relative" style={getSectionStyle("contact")}>
+        {data.backgroundImages.contact && <div className="absolute inset-0 bg-black/20"></div>}
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
@@ -754,7 +959,7 @@ export default function RozuLanding() {
             <Card className="bg-white/80 backdrop-blur-sm shadow-2xl rounded-3xl overflow-hidden">
               <CardContent className="p-8">
                 <form className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
                       <Input
@@ -814,7 +1019,7 @@ export default function RozuLanding() {
               <Sparkles className="w-6 h-6" />
             </div>
             <p className="text-rozu-pink-light">{data.footer.copyrightText}</p>
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-6 lg:gap-4">
               <Link href={data.socialLinks.twitch} target="_blank">
                 <motion.div whileHover={{ scale: 1.1 }}>
                   <Twitch className="w-6 h-6 text-rozu-pink-light hover:text-white transition-colors" />
