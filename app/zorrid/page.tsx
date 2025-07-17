@@ -521,7 +521,7 @@ export default function ZorrIDCard() {
           {/* Botón para volver al home */}
           <div className="mb-6">
             <Link href="/">
-              <Button className="bg-rozu-pink hover:bg-rozu-pink-dark text-white font-poppins rounded-full px-6 py-3">
+              <Button className="bg-gradient-to-r from-rozu-pink-light to-rozu-pink hover:from-rozu-pink to-rozu-pink-dark text-white font-poppins rounded-full px-6 py-3">
                 ← Volver al Home
               </Button>
             </Link>
@@ -665,7 +665,7 @@ export default function ZorrIDCard() {
             <Button
               onClick={generateCard}
               disabled={!isFormValid || isGenerating}
-              className="w-full bg-rozu-pink hover:bg-rozu-pink-dark text-white shadow-lg font-poppins rounded-full py-3"
+              className="w-full bg-gradient-to-r from-rozu-pink-light to-rozu-pink hover:from-rozu-pink hover:to-rozu-pink-dark text-white shadow-lg font-poppins rounded-full py-3"
               size="lg"
             >
               {isGenerating ? (
@@ -831,7 +831,7 @@ export default function ZorrIDCard() {
           <Button
             onClick={downloadCard}
             disabled={!cardId || isDownloading}
-            className="bg-rozu-pink hover:bg-rozu-pink-dark text-white shadow-lg font-poppins disabled:opacity-50 px-8 rounded-full py-4"
+            className="bg-gradient-to-r from-rozu-pink-light to-rozu-pink hover:from-rozu-pink hover:to-rozu-pink-dark text-white shadow-lg font-poppins disabled:opacity-50 px-8 rounded-full py-4"
             size="lg"
           >
             {isDownloading ? (
