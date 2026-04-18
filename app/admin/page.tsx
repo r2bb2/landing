@@ -31,6 +31,24 @@ import { TweetScheduleImporter } from "@/components/tweet-schedule-importer"
 import { VideoSync } from "@/components/video-sync"
 import { GameSync } from "@/components/game-sync"
 
+interface Credit {
+  id: string
+  category: "arte" | "modelo" | "musica" | "overlay" | "otro"
+  artistName: string
+  artistHandle?: string
+  artistUrl?: string
+  workTitle: string
+  workDescription?: string
+  commissionDate?: string
+}
+
+const defaultCredits: Credit[] = [
+  { id: "1", category: "modelo",  artistName: "Nombre del rigger",    artistHandle: "@rigger_twitter",   artistUrl: "https://twitter.com/rigger_twitter",   workTitle: "Live2D Rigging — Modelo Principal",    workDescription: "Rigging del modelo principal.", commissionDate: "Enero 2025"    },
+  { id: "2", category: "arte",    artistName: "Nombre del artista",   artistHandle: "@artista_twitter",  artistUrl: "https://twitter.com/artista_twitter",  workTitle: "Design Sheet — Modelo Principal",      workDescription: "Diseño original del personaje.", commissionDate: "Diciembre 2024" },
+  { id: "3", category: "overlay", artistName: "Nombre del diseñador", artistHandle: "@overlay_person",   artistUrl: "https://twitter.com/overlay_person",   workTitle: "Overlays y Alerts de Stream",          workDescription: "Overlays, alertas y transiciones.", commissionDate: "Febrero 2025"  },
+  { id: "4", category: "musica",  artistName: "Nombre del músico",    artistHandle: "@musician_handle",  artistUrl: "https://twitter.com/musician_handle",  workTitle: "BGM y Jingle de Intro",                workDescription: "Música de fondo y jingle.", commissionDate: "Marzo 2025"    },
+]
+
 interface Milestone {
   id: string
   date: string
@@ -389,12 +407,19 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("hero")
   const [contentData, setContentData] = useState<ContentData>(defaultData)
   const [timelineData, setTimelineData] = useState<TimelineData>(defaultTimeline)
+  const [creditsData, setCreditsData] = useState<Credit[]>(defaultCredits)
 
   useEffect(() => {
     // Check if user is authenticated
     const auth = localStorage.getItem("rozu-admin-auth")
     if (auth === "authenticated") {
       setIsAuthenticated(true)
+    }
+
+    // Load credits data
+    const savedCredits = localStorage.getItem("rozu-credits-data")
+    if (savedCredits) {
+      try { const p = JSON.parse(savedCredits); if (Array.isArray(p)) setCreditsData(p) } catch {}
     }
 
     // Load timeline data
@@ -446,6 +471,7 @@ export default function AdminPanel() {
   const handleSave = () => {
     localStorage.setItem("rozu-content-data", JSON.stringify(contentData))
     localStorage.setItem("rozu-timeline-v2", JSON.stringify(timelineData))
+    localStorage.setItem("rozu-credits-data", JSON.stringify(creditsData))
     alert("¡Contenido guardado exitosamente!")
   }
 
@@ -677,6 +703,10 @@ export default function AdminPanel() {
             <TabsTrigger value="timeline" className="flex flex-col gap-1 p-2 lg:p-3">
               <Clock className="w-3 h-3 lg:w-4 lg:h-4" />
               <span className="text-xs">Timeline</span>
+            </TabsTrigger>
+            <TabsTrigger value="creditos-tab" className="flex flex-col gap-1 p-2 lg:p-3">
+              <Star className="w-3 h-3 lg:w-4 lg:h-4" />
+              <span className="text-xs">Créditos</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1635,6 +1665,81 @@ export default function AdminPanel() {
                             Remover fondo
                           </Button>
                         )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Créditos */}
+          <TabsContent value="creditos-tab">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  Créditos
+                  <Button
+                    onClick={() => setCreditsData((prev) => [...prev, { id: String(Date.now()), category: "arte", artistName: "", workTitle: "" }])}
+                    style={{ background: "var(--pink)", color: "white" }}
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Agregar crédito
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {creditsData.map((credit, index) => (
+                  <div key={credit.id} className="p-4 border rounded-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">Crédito {index + 1}</h3>
+                      <Button onClick={() => setCreditsData((prev) => prev.filter((c) => c.id !== credit.id))} variant="destructive" size="sm" className="h-8 w-8 p-0">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Categoría</Label>
+                        <select
+                          value={credit.category}
+                          onChange={(e) => setCreditsData((prev) => prev.map((c) => c.id === credit.id ? { ...c, category: e.target.value as Credit["category"] } : c))}
+                          className="mt-1 w-full p-2 border rounded-md text-sm"
+                        >
+                          <option value="arte">Arte & Diseño</option>
+                          <option value="modelo">Modelo & Rigging</option>
+                          <option value="musica">Música</option>
+                          <option value="overlay">Overlays & Assets</option>
+                          <option value="otro">Otros</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label>Fecha</Label>
+                        <Input value={credit.commissionDate ?? ""} onChange={(e) => setCreditsData((prev) => prev.map((c) => c.id === credit.id ? { ...c, commissionDate: e.target.value } : c))} className="mt-1" placeholder="Enero 2025" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>Título del trabajo</Label>
+                      <Input value={credit.workTitle} onChange={(e) => setCreditsData((prev) => prev.map((c) => c.id === credit.id ? { ...c, workTitle: e.target.value } : c))} className="mt-1" placeholder="Ej: Live2D Rigging — Modelo Principal" />
+                    </div>
+
+                    <div>
+                      <Label>Descripción</Label>
+                      <Textarea value={credit.workDescription ?? ""} onChange={(e) => setCreditsData((prev) => prev.map((c) => c.id === credit.id ? { ...c, workDescription: e.target.value } : c))} className="mt-1" rows={2} />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label>Nombre del artista</Label>
+                        <Input value={credit.artistName} onChange={(e) => setCreditsData((prev) => prev.map((c) => c.id === credit.id ? { ...c, artistName: e.target.value } : c))} className="mt-1" />
+                      </div>
+                      <div>
+                        <Label>Handle (@)</Label>
+                        <Input value={credit.artistHandle ?? ""} onChange={(e) => setCreditsData((prev) => prev.map((c) => c.id === credit.id ? { ...c, artistHandle: e.target.value } : c))} className="mt-1" placeholder="@artista" />
+                      </div>
+                      <div>
+                        <Label>URL</Label>
+                        <Input value={credit.artistUrl ?? ""} onChange={(e) => setCreditsData((prev) => prev.map((c) => c.id === credit.id ? { ...c, artistUrl: e.target.value } : c))} className="mt-1" placeholder="https://..." />
                       </div>
                     </div>
                   </div>

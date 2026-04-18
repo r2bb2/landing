@@ -157,21 +157,27 @@ export default function CreditosPage() {
   const [tab, setTab]       = useState<Tab>("modelos")
   const [filter, setFilter] = useState<Credit["category"] | "todos">("todos")
   const [models, setModels] = useState<ModelEntry[]>(DEFAULT_MODELS)
+  const [credits, setCredits] = useState<Credit[]>(DEFAULT_CREDITS)
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem("rozu-content-data")
       if (saved) {
         const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed.models) && parsed.models.length > 0) {
-          setModels(parsed.models)
-        }
+        if (Array.isArray(parsed.models) && parsed.models.length > 0) setModels(parsed.models)
+      }
+    } catch {}
+    try {
+      const savedCredits = localStorage.getItem("rozu-credits-data")
+      if (savedCredits) {
+        const parsed = JSON.parse(savedCredits)
+        if (Array.isArray(parsed) && parsed.length > 0) setCredits(parsed)
       }
     } catch {}
   }, [])
 
   const grouped = CATEGORY_ORDER.reduce((acc, cat) => {
-    const items = DEFAULT_CREDITS.filter((c) => c.category === cat && (filter === "todos" || filter === cat))
+    const items = credits.filter((c) => c.category === cat && (filter === "todos" || filter === cat))
     if (items.length > 0) acc[cat] = items
     return acc
   }, {} as Partial<Record<Credit["category"], Credit[]>>)
