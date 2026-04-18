@@ -1,0 +1,255 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Variables ───────────────────────────────────────────────────────────────── */
+:root {
+  --pink: #e5689c;
+  --pink-dark: #c65e8a;
+  --pink-light: #f3bec8;
+  --cream: #fdf6f0;
+  --ink: #1e1025;
+  --purple: #5f578b;
+  --purple-light: #ede9f8;
+  --grain-opacity: 0.04;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+
+body {
+  background-color: var(--cream);
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+/* ── Grain ───────────────────────────────────────────────────────────────────── */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px;
+}
+
+/* ── Cursor ──────────────────────────────────────────────────────────────────── */
+* {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24'%3E%3Cpath fill='%23e5689c' d='M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z'/%3E%3C/svg%3E") 10 10, auto;
+}
+a, button, [role="button"] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23c65e8a' stroke='white' stroke-width='0.5' d='M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z'/%3E%3C/svg%3E") 12 12, pointer;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--pink); border-radius: 99px; }
+
+/* ── Typography ──────────────────────────────────────────────────────────────── */
+.font-poppins {
+  font-feature-settings: "kern" 1, "liga" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Section number label — estilo revista ───────────────────────────────────── */
+/* Usá: <div class="section-label">01 — título</div> */
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pink);
+}
+.section-label::before,
+.section-label::after {
+  content: "✦";
+  font-size: 0.6rem;
+}
+
+/* ── Display heading — texto enorme que rompe el grid ────────────────────────── */
+.display-heading {
+  font-size: clamp(2.8rem, 9vw, 9rem);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ── Sticker — elemento decorativo rotado ────────────────────────────────────── */
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  background: var(--pink);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 99px;
+  transform: rotate(-2deg);
+  box-shadow: 2px 3px 0 var(--pink-dark);
+}
+.sticker-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 14px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 99px;
+  border: 2px solid var(--ink);
+  transform: rotate(1.5deg);
+}
+
+/* ── Editorial card ──────────────────────────────────────────────────────────── */
+.ed-card {
+  background: white;
+  border: 1.5px solid rgba(30, 16, 37, 0.08);
+  border-radius: 4px;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease;
+}
+.ed-card:hover {
+  transform: translateY(-4px) rotate(0.4deg);
+  box-shadow: 0 12px 40px rgba(229, 104, 156, 0.15);
+}
+
+/* ── Polaroid ────────────────────────────────────────────────────────────────── */
+.polaroid {
+  background: white;
+  padding: 10px 10px 32px 10px;
+  border: 1.5px solid rgba(30, 16, 37, 0.08);
+  box-shadow: 2px 4px 0 rgba(30, 16, 37, 0.08);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.polaroid:hover {
+  transform: scale(1.04) rotate(0deg) !important;
+}
+
+/* ── Botón primario ──────────────────────────────────────────────────────────── */
+.btn-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  background: var(--ink);
+  color: white;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 99px;
+  border: none;
+  box-shadow: 3px 4px 0 var(--pink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn-main:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 6px 0 var(--pink);
+}
+.btn-main:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 2px 0 var(--pink);
+}
+
+/* Variante rosa */
+.btn-pink {
+  background: var(--pink);
+  box-shadow: 3px 4px 0 var(--ink);
+}
+.btn-pink:hover { box-shadow: 5px 6px 0 var(--ink); }
+.btn-pink:active { box-shadow: 1px 2px 0 var(--ink); }
+
+/* ── Línea divisora editorial ────────────────────────────────────────────────── */
+.divider {
+  width: 100%;
+  height: 1.5px;
+  background: var(--ink);
+  opacity: 0.1;
+}
+
+/* ── Marquee ticker ──────────────────────────────────────────────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 22s linear infinite;
+}
+.marquee-track:hover { animation-play-state: paused; }
+
+/* ── Imagen protegida ────────────────────────────────────────────────────────── */
+.img-protected {
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
+}
+.img-protected-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+.img-protected-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: transparent;
+}
+
+/* ── Animaciones ─────────────────────────────────────────────────────────────── */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  50%       { transform: translateY(-16px) rotate(1deg); }
+}
+.float-slow { animation: float-slow 7s ease-in-out infinite; }
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spin-slow { animation: spin-slow 12s linear infinite; }
+
+/* ── Acordeón ────────────────────────────────────────────────────────────────── */
+@keyframes accordion-down {
+  from { height: 0; }
+  to   { height: var(--radix-accordion-content-height); }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to   { height: 0; }
+}
+.animate-accordion-down { animation: accordion-down 0.2s ease-out; }
+.animate-accordion-up   { animation: accordion-up   0.2s ease-out; }
+
+/* ── Utilitarios ─────────────────────────────────────────────────────────────── */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .container { padding-left: 1.25rem; padding-right: 1.25rem; }
+  body { font-size: 16px; line-height: 1.6; }
+  input, textarea, select { font-size: 16px; }
+}
