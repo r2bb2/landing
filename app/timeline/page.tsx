@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 import { Plus, Trash2, Pencil, Check, X, Star, ImageIcon } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { uploadImage } from "@/lib/supabase"
+import { uploadImage, getContent, setContent } from "@/lib/supabase"
 
 /* ── Tipos ───────────────────────────────────────────────────────────────────── */
 interface Milestone {
@@ -245,16 +245,15 @@ export default function TimelinePage() {
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem("rozu-timeline-v2")
-    if (saved) {
-      try { setData({ ...DEFAULT, ...JSON.parse(saved) }) } catch {}
-    }
+    getContent<TimelineData>("timeline").then((saved) => {
+      if (saved) setData({ ...DEFAULT, ...saved })
+    })
     setIsAdmin(localStorage.getItem("rozu-admin-auth") === "authenticated")
   }, [])
 
   const persist = (next: TimelineData) => {
     setData(next)
-    localStorage.setItem("rozu-timeline-v2", JSON.stringify(next))
+    setContent("timeline", next).catch(console.error)
   }
 
   const openEdit = (m: Milestone) => setDraft({ ...m })

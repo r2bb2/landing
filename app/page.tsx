@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { getContent } from "@/lib/supabase"
 import { motion, AnimatePresence } from "framer-motion"
 import { ExternalLink, ChevronDown, Star, Calendar } from "lucide-react"
 import Link from "next/link"
@@ -141,22 +142,19 @@ export default function RozuLanding() {
   const [activeSection, setActiveSection] = useState("home")
 
   useEffect(() => {
-    const saved = localStorage.getItem("rozu-content-data")
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        setData({
-          ...DEFAULT,
-          ...parsed,
-          schedule:   { ...DEFAULT.schedule,   ...parsed.schedule },
-          contact:    { ...DEFAULT.contact,     ...parsed.contact },
-          footer:     { ...DEFAULT.footer,      ...parsed.footer },
-          socialLinks: { ...DEFAULT.socialLinks, ...parsed.socialLinks },
-          support:    { ...DEFAULT.support,     ...parsed.support },
-          backgroundImages: { ...DEFAULT.backgroundImages, ...parsed.backgroundImages },
-        })
-      } catch {}
-    }
+    getContent<ContentData>("home").then((saved) => {
+      if (!saved) return
+      setData({
+        ...DEFAULT,
+        ...saved,
+        schedule:         { ...DEFAULT.schedule,         ...saved.schedule },
+        contact:          { ...DEFAULT.contact,           ...saved.contact },
+        footer:           { ...DEFAULT.footer,            ...saved.footer },
+        socialLinks:      { ...DEFAULT.socialLinks,       ...saved.socialLinks },
+        support:          { ...DEFAULT.support,           ...saved.support },
+        backgroundImages: { ...DEFAULT.backgroundImages,  ...saved.backgroundImages },
+      })
+    })
   }, [])
 
   useEffect(() => {

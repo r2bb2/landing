@@ -27,7 +27,7 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { uploadImage } from "@/lib/supabase"
+import { uploadImage, getContent, setContent } from "@/lib/supabase"
 import { TweetScheduleImporter } from "@/components/tweet-schedule-importer"
 import { VideoSync } from "@/components/video-sync"
 import { GameSync } from "@/components/game-sync"
@@ -411,46 +411,28 @@ export default function AdminPanel() {
   const [creditsData, setCreditsData] = useState<Credit[]>(defaultCredits)
 
   useEffect(() => {
-    // Check if user is authenticated
     const auth = localStorage.getItem("rozu-admin-auth")
-    if (auth === "authenticated") {
-      setIsAuthenticated(true)
-    }
+    if (auth === "authenticated") setIsAuthenticated(true)
 
-    // Load credits data
-    const savedCredits = localStorage.getItem("rozu-credits-data")
-    if (savedCredits) {
-      try { const p = JSON.parse(savedCredits); if (Array.isArray(p)) setCreditsData(p) } catch {}
-    }
-
-    // Load timeline data
-    const savedTimeline = localStorage.getItem("rozu-timeline-v2")
-    if (savedTimeline) {
-      try { setTimelineData({ ...defaultTimeline, ...JSON.parse(savedTimeline) }) } catch {}
-    }
-
-    // Load saved content data
-    const savedData = localStorage.getItem("rozu-content-data")
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData)
-        // Add missing properties with defaults
-        const migratedData = {
+    async function loadData() {
+      const [savedHome, savedTimeline, savedCredits] = await Promise.all([
+        getContent<ContentData>("home"),
+        getContent<TimelineData>("timeline"),
+        getContent<Credit[]>("credits"),
+      ])
+      if (savedHome) {
+        setContentData({
           ...defaultData,
-          ...parsedData,
-          models: parsedData.models ?? defaultData.models,
-          support: { ...defaultData.support, ...parsedData.support },
-          backgroundImages: {
-            ...defaultData.backgroundImages,
-            ...parsedData.backgroundImages,
-          },
-        }
-        setContentData(migratedData)
-      } catch (error) {
-        console.error("Error parsing saved data:", error)
-        setContentData(defaultData)
+          ...savedHome,
+          models: savedHome.models ?? defaultData.models,
+          support: { ...defaultData.support, ...savedHome.support },
+          backgroundImages: { ...defaultData.backgroundImages, ...savedHome.backgroundImages },
+        })
       }
+      if (savedTimeline) setTimelineData({ ...defaultTimeline, ...savedTimeline })
+      if (savedCredits && Array.isArray(savedCredits)) setCreditsData(savedCredits)
     }
+    loadData()
   }, [])
 
   const handleLogin = () => {
@@ -469,11 +451,18 @@ export default function AdminPanel() {
     router.push("/")
   }
 
-  const handleSave = () => {
-    localStorage.setItem("rozu-content-data", JSON.stringify(contentData))
-    localStorage.setItem("rozu-timeline-v2", JSON.stringify(timelineData))
-    localStorage.setItem("rozu-credits-data", JSON.stringify(creditsData))
-    alert("¡Contenido guardado exitosamente!")
+  const handleSave = async () => {
+    try {
+      await Promise.all([
+        setContent("home", contentData),
+        setContent("timeline", timelineData),
+        setContent("credits", creditsData),
+      ])
+      alert("¡Contenido guardado exitosamente!")
+    } catch (err) {
+      console.error(err)
+      alert("Error al guardar. Verificá la conexión con Supabase.")
+    }
   }
 
   const addMilestone = () => {
@@ -491,10 +480,8 @@ export default function AdminPanel() {
     setTimelineData((prev) => ({ ...prev, milestones: prev.milestones.map((m) => m.id === id ? { ...m, ...patch } : m) }))
   }
 
-  const handleMilestoneImage = (file: File, id: string) => {
-    const reader = new FileReader()
-    reader.onload = (e) => updateMilestone(id, { image: e.target?.result as string })
-    reader.readAsDataURL(file)
+  const handleMilestoneImage = async (file: File, id: string) => {
+    await handleMilestoneImageUpload(file, id)
   }
 
   const handleImageUpload = async (file: File, section: string, index?: number, field?: string) => {

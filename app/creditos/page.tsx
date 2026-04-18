@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { getContent } from "@/lib/supabase"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, ExternalLink } from "lucide-react"
 import Link from "next/link"
@@ -160,20 +161,13 @@ export default function CreditosPage() {
   const [credits, setCredits] = useState<Credit[]>(DEFAULT_CREDITS)
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("rozu-content-data")
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed.models) && parsed.models.length > 0) setModels(parsed.models)
-      }
-    } catch {}
-    try {
-      const savedCredits = localStorage.getItem("rozu-credits-data")
-      if (savedCredits) {
-        const parsed = JSON.parse(savedCredits)
-        if (Array.isArray(parsed) && parsed.length > 0) setCredits(parsed)
-      }
-    } catch {}
+    Promise.all([
+      getContent<{ models?: ModelEntry[] }>("home"),
+      getContent<Credit[]>("credits"),
+    ]).then(([home, savedCredits]) => {
+      if (home?.models && home.models.length > 0) setModels(home.models)
+      if (savedCredits && savedCredits.length > 0) setCredits(savedCredits)
+    })
   }, [])
 
   const grouped = CATEGORY_ORDER.reduce((acc, cat) => {
