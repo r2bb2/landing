@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { Plus, Trash2, Pencil, Check, X, Star, ImageIcon } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { uploadImage } from "@/lib/supabase"
 
 /* ── Tipos ───────────────────────────────────────────────────────────────────── */
 interface Milestone {
@@ -98,12 +99,15 @@ function ImagePanel({
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => onImageChange(ev.target?.result as string)
-    reader.readAsDataURL(file)
+    try {
+      const url = await uploadImage(file, "timeline")
+      onImageChange(url)
+    } catch (err) {
+      console.error("Image upload failed:", err)
+    }
   }
 
   if (milestone.image) {

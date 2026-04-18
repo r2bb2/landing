@@ -27,6 +27,7 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { uploadImage } from "@/lib/supabase"
 import { TweetScheduleImporter } from "@/components/tweet-schedule-importer"
 import { VideoSync } from "@/components/video-sync"
 import { GameSync } from "@/components/game-sync"
@@ -496,39 +497,35 @@ export default function AdminPanel() {
     reader.readAsDataURL(file)
   }
 
-  const handleImageUpload = (file: File, section: string, index?: number, field?: string) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const result = e.target?.result as string
+  const handleImageUpload = async (file: File, section: string, index?: number, field?: string) => {
+    try {
+      const url = await uploadImage(file, section)
 
       if (section === "hero" && field === "heroImage") {
-        setContentData((prev) => ({
-          ...prev,
-          hero: { ...prev.hero, heroImage: result },
-        }))
+        setContentData((prev) => ({ ...prev, hero: { ...prev.hero, heroImage: url } }))
       } else if (section === "games" && typeof index === "number" && field === "logo") {
-        setContentData((prev) => ({
-          ...prev,
-          games: prev.games.map((game, i) => (i === index ? { ...game, logo: result } : game)),
-        }))
+        setContentData((prev) => ({ ...prev, games: prev.games.map((g, i) => i === index ? { ...g, logo: url } : g) }))
       } else if (section === "videos" && typeof index === "number" && field === "thumbnail") {
-        setContentData((prev) => ({
-          ...prev,
-          videos: prev.videos.map((video, i) => (i === index ? { ...video, thumbnail: result } : video)),
-        }))
+        setContentData((prev) => ({ ...prev, videos: prev.videos.map((v, i) => i === index ? { ...v, thumbnail: url } : v) }))
       } else if (section === "models" && typeof index === "number" && field === "imageSrc") {
-        setContentData((prev) => ({
-          ...prev,
-          models: prev.models.map((m, i) => (i === index ? { ...m, imageSrc: result } : m)),
-        }))
+        setContentData((prev) => ({ ...prev, models: prev.models.map((m, i) => i === index ? { ...m, imageSrc: url } : m) }))
       } else if (section === "backgrounds" && field) {
-        setContentData((prev) => ({
-          ...prev,
-          backgroundImages: { ...prev.backgroundImages, [field]: result },
-        }))
+        setContentData((prev) => ({ ...prev, backgroundImages: { ...prev.backgroundImages, [field]: url } }))
       }
+    } catch (err) {
+      alert("Error al subir la imagen. Verificá la configuración de Supabase.")
+      console.error(err)
     }
-    reader.readAsDataURL(file)
+  }
+
+  const handleMilestoneImageUpload = async (file: File, id: string) => {
+    try {
+      const url = await uploadImage(file, "timeline")
+      updateMilestone(id, { image: url })
+    } catch (err) {
+      alert("Error al subir la imagen.")
+      console.error(err)
+    }
   }
 
   const addModel = () => {
