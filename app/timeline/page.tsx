@@ -239,14 +239,14 @@ function EditModal({
 
 /* ── Componente principal ────────────────────────────────────────────────────── */
 export default function TimelinePage() {
-  const [data, setData] = useState<TimelineData>(DEFAULT)
+  const [data, setData] = useState<TimelineData | null>(null)
   const [editMode, setEditMode] = useState(false)
   const [draft, setDraft] = useState<Milestone | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     getContent<TimelineData>("timeline").then((saved) => {
-      if (saved) setData({ ...DEFAULT, ...saved })
+      setData({ ...DEFAULT, ...(saved ?? {}) })
     })
     setIsAdmin(localStorage.getItem("rozu-admin-auth") === "authenticated")
   }, [])
@@ -280,6 +280,12 @@ export default function TimelinePage() {
     persist(next)
     setDraft({ ...m })
   }
+
+  if (!data) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--cream)" }}>
+      <span className="spin-slow text-4xl" style={{ color: "var(--pink)" }}>✦</span>
+    </div>
+  )
 
   return (
     <div className="min-h-screen" style={{ background: "var(--cream)" }}>

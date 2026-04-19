@@ -136,23 +136,22 @@ const TICKER_ITEMS = ["✦ RozuVT", "🦊 Kitsune", "✦ Argentina", "🌸 Chaos
 
 /* ── Componente principal ────────────────────────────────────────────────────── */
 export default function RozuLanding() {
-  const [data, setData] = useState<ContentData>(DEFAULT)
+  const [data, setData] = useState<ContentData | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [activeSection, setActiveSection] = useState("home")
 
   useEffect(() => {
     getContent<ContentData>("home").then((saved) => {
-      if (!saved) return
       setData({
         ...DEFAULT,
-        ...saved,
-        schedule:         { ...DEFAULT.schedule,         ...saved.schedule },
-        contact:          { ...DEFAULT.contact,           ...saved.contact },
-        footer:           { ...DEFAULT.footer,            ...saved.footer },
-        socialLinks:      { ...DEFAULT.socialLinks,       ...saved.socialLinks },
-        support:          { ...DEFAULT.support,           ...saved.support },
-        backgroundImages: { ...DEFAULT.backgroundImages,  ...saved.backgroundImages },
+        ...(saved ?? {}),
+        schedule:         { ...DEFAULT.schedule,         ...saved?.schedule },
+        contact:          { ...DEFAULT.contact,           ...saved?.contact },
+        footer:           { ...DEFAULT.footer,            ...saved?.footer },
+        socialLinks:      { ...DEFAULT.socialLinks,       ...saved?.socialLinks },
+        support:          { ...DEFAULT.support,           ...saved?.support },
+        backgroundImages: { ...DEFAULT.backgroundImages,  ...saved?.backgroundImages },
       })
     })
   }, [])
@@ -173,6 +172,12 @@ export default function RozuLanding() {
     setActiveSection(id)
     setMobileOpen(false)
   }
+
+  if (!data) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--cream)" }}>
+      <span className="spin-slow text-4xl" style={{ color: "var(--pink)" }}>✦</span>
+    </div>
+  )
 
   return (
     <div className="min-h-screen" style={{ background: "var(--cream)" }}>
