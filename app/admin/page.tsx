@@ -451,12 +451,21 @@ export default function AdminPanel() {
     router.push("/")
   }
 
+  const stripBase64 = (obj: unknown): unknown => {
+    if (typeof obj === "string") return obj.startsWith("data:") ? "" : obj
+    if (Array.isArray(obj)) return obj.map(stripBase64)
+    if (obj && typeof obj === "object") {
+      return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, stripBase64(v)]))
+    }
+    return obj
+  }
+
   const handleSave = async () => {
     try {
       await Promise.all([
-        setContent("home", contentData),
-        setContent("timeline", timelineData),
-        setContent("credits", creditsData),
+        setContent("home", stripBase64(contentData)),
+        setContent("timeline", stripBase64(timelineData)),
+        setContent("credits", stripBase64(creditsData)),
       ])
       alert("¡Contenido guardado exitosamente!")
     } catch (err) {
