@@ -239,7 +239,7 @@ function EditModal({
 
 /* ── Componente principal ────────────────────────────────────────────────────── */
 export default function TimelinePage() {
-  const [data, setData] = useState<TimelineData | null>(null)
+  const [data, setData] = useState<TimelineData>(DEFAULT)
   const [editMode, setEditMode] = useState(false)
   const [draft, setDraft] = useState<Milestone | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -280,12 +280,6 @@ export default function TimelinePage() {
     persist(next)
     setDraft({ ...m })
   }
-
-  if (!data) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--cream)" }}>
-      <span className="spin-slow text-4xl" style={{ color: "var(--pink)" }}>✦</span>
-    </div>
-  )
 
   return (
     <div className="min-h-screen" style={{ background: "var(--cream)" }}>

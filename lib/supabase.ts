@@ -21,7 +21,7 @@ export async function getContent<T>(key: string): Promise<T | null> {
     .from("site_content")
     .select("value")
     .eq("key", key)
-    .single()
+    .maybeSingle()
   if (error || !data) return null
   return data.value as T
 }
