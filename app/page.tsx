@@ -276,13 +276,27 @@ export default function RozuLanding() {
               <div className="sticker w-fit mx-auto lg:mx-0">🦊 VTuber Argentina</div>
 
               <h1 className="display-heading text-[var(--ink)]">
-                {data.hero.title.split("\n").map((line, i) => (
-                  <span key={i} className="block">
-                    {i === 1
-                      ? <><span style={{ color: "var(--pink)" }}>{line.split(" ")[0]} </span>{line.split(" ").slice(1).join(" ")}</>
-                      : line}
-                  </span>
-                ))}
+                {(() => {
+                  const lines = data.hero.title.split("\n")
+                  if (lines.length >= 2) {
+                    return lines.map((line, i) => (
+                      <span key={i} className="block">
+                        {i === 1
+                          ? <><span style={{ color: "var(--pink)" }}>{line.split(" ")[0]} </span>{line.split(" ").slice(1).join(" ")}</>
+                          : line}
+                      </span>
+                    ))
+                  }
+                  // Sin salto de línea: colorear "I'm" donde aparezca
+                  const words = data.hero.title.split(" ")
+                  return (
+                    <span className="block">
+                      {words.map((w, i) => (
+                        <span key={i} style={w === "I'm" ? { color: "var(--pink)" } : {}}>{w}{i < words.length - 1 ? " " : ""}</span>
+                      ))}
+                    </span>
+                  )
+                })()}
               </h1>
 
               <p className="text-lg text-[var(--ink)]/70 max-w-md leading-relaxed mx-auto lg:mx-0">

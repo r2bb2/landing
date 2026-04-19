@@ -169,7 +169,7 @@ interface ContentData {
 
 const defaultData: ContentData = {
   hero: {
-    title: "¡Hola! I'm Rozu",
+    title: "¡Hola!\nI'm Rozu",
     subtitle:
       "A magical kitsune VTuber from Argentina. Join me for cozy gaming sessions, chaotic adventures, and lots of kawaii moments! Let's turn your world pink together!",
     heroImage: "/placeholder.svg?height=400&width=600",
